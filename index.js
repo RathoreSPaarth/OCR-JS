@@ -45,8 +45,21 @@ app.get('/',(req,res,err)=>{
 app.post('/',(req,res,err)=>{
   upload(req,res,err => {
       console.log('done!')
+      fs.readFile(`./uploads/${req.file.originalname}` , (err,data) => {
+          if(err) return console.log("error is",err);
+
+          worker
+          .recognize(data,"eng", {tess_js_pdf: "1"})
+          .progress(progress => {
+              console.log(progress)
+          })
+          .then(result => {
+              res.send(result.text)
+          })
+          //.finally(() => worker.terminate())
+      })
   })
-  res.redirect('/')
+  //res.redirect('/')
 })
 
 
