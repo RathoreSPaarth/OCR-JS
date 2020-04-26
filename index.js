@@ -3,12 +3,13 @@ const app = express()
 const ejs = require('ejs')
 const multer = require('multer')
 const fs = require('fs')
-// const { createWorker } = require("tesseract.js")
-// const worker = new createWorker({
-// logger: m => console.log(m)
-// });
-////
-//setting up tesseract
+var mysql      = require('mysql');
+var unirest = require("unirest");
+
+var req = unirest("GET", "https://edamam-food-and-grocery-database.p.rapidapi.com/parser");
+var link
+var temp
+var k = 0
 const {TesseractWorker} = require('tesseract.js')
 const worker = new TesseractWorker();
 
@@ -26,7 +27,7 @@ const storage = multer.diskStorage({
     },
     filename: (req,file,cb) => {
         cb(null,file.originalname)
-    } 
+    }
 })
  const upload = multer({
      storage: storage
@@ -42,26 +43,58 @@ app.get('/',(req,res,err)=>{
 //console.log('pls work!')
 
 //routing-POST
-app.post('/',(req,res,err)=>{
+app.post('/details',(req,res,err)=>{
   upload(req,res,err => {
-      console.log('done!')
+      //console.log('done!')
       fs.readFile(`./uploads/${req.file.originalname}` , (err,data) => {
           if(err) return console.log("error is",err);
-
+    
           worker
-          .recognize(data,"eng", {tess_js_pdf: "1"})
+           .recognize(data,"eng", {tess_js_pdf: "1"})
           .progress(progress => {
               console.log(progress)
           })
           .then(result => {
-              res.send(result.text)
+               var word = result.text;
+               var arr = word.split("\n");
+                var newArr = []
+
+               for(var i = 0; i<arr.length; i++){
+                   var character = arr[i].split(" ")
+                   newArr.push(character)
+               }
+
+            var finalArr = [].concat(...newArr);
+            console.log(finalArr)
+            temp = finalArr[0]
+            console.log(typeof(temp))
+    
+        console.log(link)
+        res.redirect(link)
           })
           //.finally(() => worker.terminate())
       })
   })
-  //res.redirect('/')
 })
 
-
+function api(){
+    var i = "lays"
+    req.query({
+        "ingr": `${i}`
+    });
+    
+    req.headers({
+        "x-rapidapi-host": "edamam-food-and-grocery-database.p.rapidapi.com",
+        "x-rapidapi-key": "201594df46msh2bd5bd39dfa30f1p1d18c9jsn57e1cbc0afc3"
+    });
+    
+    req.end(function (res) {
+        if (res.error) throw new Error(res.error);
+    
+        link = (res.body._links.next.href);
+    });
+    
+}
+api()
 //SETTING UP SERVER
 app.listen(port);
