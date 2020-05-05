@@ -8,7 +8,7 @@ var unirest = require("unirest");
 
 var req = unirest("GET", "https://edamam-food-and-grocery-database.p.rapidapi.com/parser");
 var link
-var temp
+let temp
 var k = 0
 const {TesseractWorker} = require('tesseract.js')
 const worker = new TesseractWorker();
@@ -64,37 +64,52 @@ app.post('/details',(req,res,err)=>{
                    newArr.push(character)
                }
 
-            var finalArr = [].concat(...newArr);
+            finalArr = [].concat(...newArr);
             console.log(finalArr)
             temp = finalArr[0]
             console.log(typeof(temp))
-    
-        console.log(link)
-        res.redirect(link)
+            //res.redirect(link)
+          }).then(temp=>{
+            //console.log(finalArr[0])
+            param = finalArr[0]
+            api(param)
+            // res.redirect(link)
+            function red(){
+                res.redirect(link)
+            }
+            setTimeout(red,3000)
+            
           })
           //.finally(() => worker.terminate())
+          
       })
   })
+
 })
 
-function api(){
-    var i = "lays"
-    req.query({
-        "ingr": `${i}`
-    });
-    
-    req.headers({
-        "x-rapidapi-host": "edamam-food-and-grocery-database.p.rapidapi.com",
-        "x-rapidapi-key": "201594df46msh2bd5bd39dfa30f1p1d18c9jsn57e1cbc0afc3"
-    });
-    
-    req.end(function (res) {
-        if (res.error) throw new Error(res.error);
-    
-        link = (res.body._links.next.href);
-    });
-    
-}
-api()
+//api()
+
+ function api(param){
+                var i = "lays"
+                req.query({
+                    "ingr": `${param}`
+                });
+                
+                req.headers({
+                    "x-rapidapi-host": "edamam-food-and-grocery-database.p.rapidapi.com",
+                    "x-rapidapi-key": "201594df46msh2bd5bd39dfa30f1p1d18c9jsn57e1cbc0afc3"
+                });
+                
+                
+                req.end(function (res) {
+                    if (res.error) throw new Error(res.error);
+                
+                    link = (res.body._links.next.href);
+                    console.log(link)
+                });
+                
+            }
+
+
 //SETTING UP SERVER
 app.listen(port);
