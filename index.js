@@ -107,7 +107,6 @@ app.post('/details',(req,res,err)=>{
 // It takes one parameter which is nothing but the text given by worker object by the first .then method.
 
  function api(param){
-                var i = "lays"
                 req.query({
                     "ingr": `${param}`
                 });
